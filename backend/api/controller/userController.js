@@ -2,6 +2,7 @@ const userModel = require('../model/userModel');
 const jwt = require('jsonwebtoken');
 //const config = require('config');
 const bcrypt = require('bcryptjs');
+const { cookie } = require('express/lib/response');
 
 const signup = async(req, res, next)=>{
     const { name, user_name, email, password, role } = req.body;
@@ -31,6 +32,7 @@ const signup = async(req, res, next)=>{
                 password: hashed_password,
                 role: req.body.role
             }); 
+            console.log(user);
             await user.save();
 
             res.status(200).json({
@@ -50,7 +52,7 @@ const login = async (req, res, next)=>{
 
     try {
         const user = await userModel.find({email: req.body.email});
-        console.log(user.password);
+        //console.log(user[0].password);
         if(user && user.length > 0){
             const is_valid_password = await bcrypt.compare(req.body.password, user[0].password);
             //console.log(is_valid_password);
@@ -62,11 +64,33 @@ const login = async (req, res, next)=>{
                     email: user[0].email,
                     user_id: user[0]._id
                 }, process.env.JWT_PRIVATE_KEY, {expiresIn: '1h'});
+            console.log(token);
+            
+            //user[0].token = token;
+            //await user.save();
+            
+            //cookie setting
+            // return res.cookie('access_token', token,{
+            //     expiresIn: '3600000',
+            //     httpOnly: true,
+            //     sign: true,
+            // })
+            // .status(200)
+            // .json({message: "Loggin in successfully !"});  
 
-            res.status(200).json({
-                token: token,
-                message: 'Login Successful'
+            return res.status(200).json({
+                message: 'Logged in successfully',
+                token: token
             });
+            
+            
+            //res.cookie(process.env.COOKIE_NAME, token);
+            //console.log(cookie);
+
+            // res.status(200).json({
+            //     token: token,
+            //     message: 'Login Successful'
+            // });
 
             }else{
                 res.status(401).json({
@@ -80,8 +104,9 @@ const login = async (req, res, next)=>{
             });
         }
     }catch(e){
+        console.log(e);
         res.status(401).json({
-            error: 'Authentication failed!'
+            error: e
         });   
     }
 };
@@ -94,13 +119,15 @@ const update_user = async(req, res, next)=>{
         const hashed_password = await bcrypt.hash(req.body.password, 10);
         console.log(user.user_name);
         console.log(user._id);
+    
         if(user){
             user.name = req.body.name || user.name;
-            user.user_name = req.body.user_name || user.user_name;
-            user.email = req.body.email || user.email;
+            user.user_name = req.user_name || user.user_name;
+            user.email = req.email || user.email;
             user.password = hashed_password || user.password;
-            await user.save();
-            
+
+            await user.save(); 
+
             const token = jwt.sign({
                 user_name: user.user_name,
                 email: user.email,
@@ -122,6 +149,8 @@ const update_user = async(req, res, next)=>{
         console.log("Error"+ err);
     }
 };
+
+
 
 module.exports = {signup, login, update_user};
 

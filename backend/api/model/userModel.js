@@ -31,7 +31,7 @@ const userSchema = mongoose.Schema(
             require: true,
             enum: ["admin", "consumer", "supplier"],
             default: "consumer",
-        },
+        }
     },
 
     {
