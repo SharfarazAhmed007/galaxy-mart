@@ -50,18 +50,19 @@ const signup = async(req, res, next)=>{
 const login = async (req, res, next)=>{
 
     try {
-        const user = await userModel.find({email: req.body.email});
+        const data = await userModel.find({email: req.body.email});
+        const user = data[0];
         //console.log(user[0].password);
         if(user && user.length > 0){
-            const is_valid_password = await bcrypt.compare(req.body.password, user[0].password);
+            const is_valid_password = await bcrypt.compare(req.body.password, user.password);
             //console.log(is_valid_password);
             // console.log('');
             // console.log(user);
             if(is_valid_password){
                 const token = jwt.sign({
                     //user_name: user[0].user_name,
-                    email: user[0].email,
-                    user_id: user[0]._id
+                    email: user.email,
+                    user_id: user._id
                 }, process.env.JWT_PRIVATE_KEY, {expiresIn: '1h'});
             console.log(token);
             
