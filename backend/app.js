@@ -4,16 +4,19 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const productRoutes = require('./api/routes/products.js');
+const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/order');
 const userRoutes = require('./api/routes/user');
+const categoryRoutes = require('./api/routes/category');
 app.use(cookieParser());
 app.use(morgan('dev'));
+app.use(cors());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use('/orders', orderRoutes);
 app.use('/products', productRoutes);
 app.use('/users', userRoutes);
+app.use('/category', categoryRoutes);
 
 //error handling
 app.use((req, res, next)=>{

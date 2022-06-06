@@ -15,25 +15,20 @@ const auth = (req, res, next)=>{
             return res.status(403).json({messagess :'token not found'});
         }
 
+        
         const decoded = jwt.verify(token, process.env.JWT_PRIVATE_KEY,(err, decode)=>{
             if(err){
                 res.status(401).json({messageinAuth: err});
              }
             else{
                 console.log(decode);
-                req.user_name = decode.user_name;
+                // req.user_name = decode.user_name;
                 req.email = decode.email;
                 req.user_id = decode.user_id;
             }
         });
         
 
-        //const{ user_name, email, user_id } = decoded;
-        //console.log(decoded);
-
-        // req.user_name = user_name;
-        // req.email = email;
-        // req.user_id = user_id;
 
         next();
     }catch(err){

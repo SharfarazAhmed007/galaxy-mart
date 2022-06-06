@@ -2,12 +2,11 @@ const userModel = require('../model/userModel');
 const jwt = require('jsonwebtoken');
 //const config = require('config');
 const bcrypt = require('bcryptjs');
-const { cookie } = require('express/lib/response');
 
 const signup = async(req, res, next)=>{
-    const { name, user_name, email, password, role } = req.body;
+    const { name, email, password, role } = req.body;
 
-    if(!name || !user_name || !email || !password || !role){
+    if(!name || !email || !password || !role){
         res.status(400).json({
             message: 'Please enter all fields!!',
         });
@@ -27,7 +26,7 @@ const signup = async(req, res, next)=>{
         
             const user = new userModel({
                 name: req.body.name,
-                user_name: req.body.user_name,
+                //user_name: req.body.user_name,
                 email: req.body.email,
                 password: hashed_password,
                 role: req.body.role
@@ -60,7 +59,7 @@ const login = async (req, res, next)=>{
             // console.log(user);
             if(is_valid_password){
                 const token = jwt.sign({
-                    user_name: user[0].user_name,
+                    //user_name: user[0].user_name,
                     email: user[0].email,
                     user_id: user[0]._id
                 }, process.env.JWT_PRIVATE_KEY, {expiresIn: '1h'});
@@ -80,17 +79,9 @@ const login = async (req, res, next)=>{
 
             return res.status(200).json({
                 message: 'Logged in successfully',
-                token: token
+                token: token,
+                user: user
             });
-            
-            
-            //res.cookie(process.env.COOKIE_NAME, token);
-            //console.log(cookie);
-
-            // res.status(200).json({
-            //     token: token,
-            //     message: 'Login Successful'
-            // });
 
             }else{
                 res.status(401).json({
@@ -122,21 +113,22 @@ const update_user = async(req, res, next)=>{
     
         if(user){
             user.name = req.body.name || user.name;
-            user.user_name = req.user_name || user.user_name;
+            //user.user_name = req.user_name || user.user_name;
             user.email = req.email || user.email;
             user.password = hashed_password || user.password;
 
             await user.save(); 
 
             const token = jwt.sign({
-                user_name: user.user_name,
+                // user_name: user.user_name,
                 email: user.email,
                 user_id: user._id
             }, process.env.JWT_PRIVATE_KEY, {expiresIn: '1h'});
 
             res.status(200).json({
                 token: token,
-                message:"Profile Updated!!"
+                message:"Profile Updated!!",
+                user: user
             });
         }else{
             res.status(401).json({

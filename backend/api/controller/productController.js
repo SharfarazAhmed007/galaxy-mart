@@ -1,100 +1,63 @@
 const productModel = require('../model/productModel');
 const mongoose = require('mongoose');
+//const shortid = require('shortid');
+const slugify = require('slugify');
 
+const post_items = async(req, res, next)=>{
+    //res.status(200).json({file: req.files, body: req.body});
 
-// const getProductById = (req, res, next)=>{
-    // const id = req.params.productId;
-    // productModel.findById(id).exec().then(doc=>{
-        // console.log("from Database", doc);
-    //    if(doc){
-            // res.status(200).json(doc);
-    //    }else{
-        //    res.status(404).json({
-            //    message: "no valid entry found for the provided ID"
-        //    });
-    //    } 
-    // })
-    // .catch(err=>{
-        // console.log(err);
-        // res.status(500).json({error: err});
-    // });
-// };
+    const {name, price, description, category, supplier, countInStock} = req.body;
 
-const get_items = (req, res, next)=>{
-    // productModel.find().exec().then(docs=>{
-        // console.log("from Database", docs);
-    //    if(docs){
-            // res.status(200).json(docs);
-    //    }else{
-        //    res.status(404).json({
-            //    message: "no valid entry found for the provided ID"
-        //    });
-    //    } 
-    // })
-    // .catch(err=>{
-        // console.log(err);
-        // res.status(500).json({error: err});
-    // });
+    let images = [];
 
-    productModel.find().sort({date:-1}).then(items =>{
-        res.json(items);
-    });
-};
-
-
-
-
-
-//uploading a product
-const post_items = (req, res, next)=>{
-    
-    const product = new productModel({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        price: req.body.price,
+    if(req.files.length > 0){
+        images = req.files.map(file=>{
+            return {img: file.filename};
+        });
+    }
         
+    const product = new productModel({
+        name: name,
+        slug: slugify(name),
+        price,
+        description,
+        images,
+        category,
+        supplier,
+        countInStock
     });
-    product.save()
-           .then(result=>{
-               console.log("from database",result);
-               res.status(200).json({
-                message: 'handling POST requests to /products....',
-                product: product
-            });
-           })
-           .catch(err=>{
-               console.log(err);
-               res.status(500).json({error: err});
-           });
-};
-
-const update_items = (req, res, next)=>{
-    const id = req.params.productId;
-    
-    productModel.findOneAndUpdate({_id: id}, {}).exec().then(doc=>{
-        console.log("from database",doc);
-    })
-    .catch(err=>{
-        console.log("Error: ", err);
-    });
-
-
-    res.status(201).json({
-        message: 'updated product successfully',
-        id: req.params.productId
+    console.log(product);
+    await product.save((error, product)=>{
+        if(error) return res.status(400).json({messagesss: error.message});
+        if(product){
+            res.status(200).json({product});
+        }
     });
 };
 
-const delete_items = (req, res, next)=>{
-    const id = req.params.productId;
-    productModel.deleteOne({_id: id}).exec()
-    .then(result=>{
-        res.status(200).json(result);
-    })
-    .catch(err=>{
-        console.log(err);
-        res.status(500).json({error: err});
-    }); 
+const get_items = async(req, res, next)=>{
+    const products = await productModel.find({});
+    if(products){
+        res.status(200).json({products: products});
+    }else{
+        res.status(401).json({message: "Failed request..."});
+    }
 };
 
-module.exports = {update_items, delete_items, get_items, post_items};
+const get_items_by_id = async(req, res, next)=>{
+    const _id = req.params.id;
+    const product = await productModel.findById(_id);
+
+    if(!product){
+        res.status(401).json({message: 'items not found by id...'});
+        return;
+    }
+    res.status(200).json({
+        product: product
+    });
+};
+
+
+
+
+module.exports = {post_items, get_items, get_items_by_id};

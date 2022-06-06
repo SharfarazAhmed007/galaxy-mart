@@ -12,8 +12,11 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.3.3",
     "morgan": "^1.10.0",
+    "multer": "*",
     "nodemon": "^2.0.16",
     "require": "^2.4.20",
+    "shortid": "^2.2.16",
+    "slugify": "^1.6.5",
     "validator": "^13.7.0"
   },
   "scripts": {
